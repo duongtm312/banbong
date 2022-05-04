@@ -6,7 +6,9 @@ let x = canvas.width / 2
 let y = canvas.height / 2
 let player = new Player(x, y, 30, 'white')
 
-
+let soundTrack = document.getElementById('audio')
+let gun = document.getElementById('ban')
+let bum = document.getElementById('no')
 let projectiles = []
 let enemies = []
 let particles = []
@@ -16,24 +18,24 @@ let speed = 1500;
 let checkSpeed = 0;
 
 function spawnEnemies() {
-        let radius = Math.random() * (30 - 10) + 10
-        let y
-        if (Math.random() < 0.5) {
-            x = Math.random() < 0.5 ? 0 - radius : canvas.width + radius
-            y = Math.random() * canvas.height
-        } else {
-            x = Math.random() * canvas.width
-            y = Math.random() < 0.5 ? 0 - radius : canvas.height + radius
-        }
-        let randomColor = Math.random() * 360
-        let color = `hsl(${randomColor},50%,50%)`
-        let angle = Math.atan2(canvas.height / 2 - y, canvas.width / 2 - x)
-        let velocity = {
-            x: Math.cos(angle) * 0.9, y: Math.sin(angle) * 0.9
-        }
+    let radius = Math.random() * (30 - 10) + 10
+    let y
+    if (Math.random() < 0.5) {
+        x = Math.random() < 0.5 ? 0 - radius : canvas.width + radius
+        y = Math.random() * canvas.height
+    } else {
+        x = Math.random() * canvas.width
+        y = Math.random() < 0.5 ? 0 - radius : canvas.height + radius
+    }
+    let randomColor = Math.random() * 360
+    let color = `hsl(${randomColor},50%,50%)`
+    let angle = Math.atan2(canvas.height / 2 - y, canvas.width / 2 - x)
+    let velocity = {
+        x: Math.cos(angle) * 0.9, y: Math.sin(angle) * 0.9
+    }
 
-        enemies.push(new Enemy(x, y, radius, color, velocity))
-    setTimeout(spawnEnemies,speed)
+    enemies.push(new Enemy(x, y, radius, color, velocity))
+    setTimeout(spawnEnemies, speed)
 }
 
 let animationId
@@ -66,11 +68,13 @@ function animate() {
             cancelAnimationFrame(animationId)
             document.getElementById('startTable').style.display = 'flex'
             document.getElementById('score2').innerHTML = scorePoint
+            soundTrack.pause()
         }
         //object touch
         projectiles.forEach((projectile, projectileIndex) => {
             let dist = Math.hypot(projectile.x - enemy.x, projectile.y - enemy.y)
             if (dist - enemy.radius - projectile.radius < 1) {
+                bum.play()
                 //create explosions
                 for (let i = 0; i < enemy.radius * 2; i++) {
                     particles.push(new Particle(projectile.x, projectile.y, Math.random() * 2, enemy.color, {
@@ -95,25 +99,30 @@ function animate() {
             }
         })
     })
-    if (checkSpeed ==10) {
+    if (checkSpeed == 10) {
         speed -= 100;
-        checkSpeed=0
+        checkSpeed = 0
     }
 }
 
-window.addEventListener('click', (even) => {
+window.addEventListener('mousedown', (even) => {
     let angle = Math.atan2(even.clientY - canvas.height / 2, even.clientX - canvas.width / 2)
     let velocity = {
         x: Math.cos(angle) * 4, y: Math.sin(angle) * 4
     }
     projectiles.push(new Projectile(canvas.width / 2, canvas.height / 2, 5, 'white', velocity))
+    gun.play()
 
 })
+
 animate()
 startGame.addEventListener('click', () => {
     scorePoint = 0;
-    enemies =[]
+    enemies = []
     animate()
     spawnEnemies()
     document.getElementById('startTable').style.display = 'none '
+    speed = 1500
+    soundTrack.play()
 })
+
